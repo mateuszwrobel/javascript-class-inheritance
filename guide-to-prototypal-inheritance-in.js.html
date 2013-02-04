@@ -1,0 +1,141 @@
+<html>
+<head>
+<script>
+console.log("Zrobimy przyklad dziedziczenia prototypowego i wywoływania metody z klasy parenta za pomocą MyParent.prototype.myMethod.call(this) bo to nie dla każdego jest oczywiste");
+console.group();
+// Nasza klasa bazowa.
+function MyBase(){
+    this.nameOfClass = "MyBase";
+    console.log("Wywołano konstruktor klasy MyBase.");
+};
+// Klasa która po niczym nie dziedziczy nie musi mieć zdefiniowanego prototypu
+// Automatycznie będzie posiadała prototyp MyBase (tak, to troche popierdolone,
+// klasa która jest prototypem samej siebie, ale co zrobisz).
+/* MyBase.prototype = {}; */
+
+// Metoda w MyBase 
+MyBase.prototype.printClassName = function(c){
+   console.log("Wywołano printClassname w klasie MyBase, a wartość nameOfClass to: "+this.nameOfClass+". Wartość parametru c to: "+c.toString());
+};
+// Metoda której nie będziemy przeciążąć.
+MyBase.prototype.unoverridenMethod = function(){
+   console.log("Wywołano unoverriden w klasie MyBase.");
+};
+
+// Klasa dziedzicząca po MyBase.
+function Extending(){
+  // coś jak super w javie, albo parent::__construct() w PHP, wywoła konstruktor MyBase w kontekscie tego obiektu
+  MyBase.call(this);
+  this.nameOfClass = "Extending";
+  console.log("Wywołano konstruktor klasy Extending.");
+};
+// Dziedziczymy po MyBase.
+// Koniecznie należy użyć new, ponieważ prototyp, nie jest klasą, funkcją tylko właśnie obiektem 
+// który zostanie sklonowany by utworzyć obiekt Extending. Na tym polega dziedziczenie prototypowe
+// - na klonowaniu, zupełnie jak php __clone.
+// Dlatego konstruktory w Javascript NIE MOGĄ posiadać side-effectów, np grzebania przy zmiennych
+// nienależących do obiektu, globalach albo alert czy console.log! Żaden konstruktor nie powinien posiadać
+// side effectów ale w javascripcie jest to szczególnie komiczne, ponieważ konstruktory obiektów
+// odpalą się nawet jeżeli nie utworzymy sami żadnej instancji żadnego obiektu (gdyż trzeba utworzyć
+// po jednej instancji żeby było co wstawić za prototyp, tak jak tu poniżej. 
+Extending.prototype = new MyBase();
+
+// Od kiedy mozna uzywac instanceof, nie trzeba przywracać konstruktora bo
+// w zasadzie to nigdzie się tego nie używa. Chociaż na certyfikacie MCTS 70-480 
+// wymagają tego :) Jeżeli nie używasz konstrukcji obiekt.prototype.constructor == MyBase,
+// to daruj sobie, bo to jedna boilerplatowa linijka więcej!
+/* MoreExtending.prototype.constructor = Extending; */
+
+// Przeciążam metode z MyBase, i w jej wnętrzu używam metody MyBase z klasy bazowej
+Extending.prototype.printClassName = function(c){
+  console.log("Wywołano metodę printClassName w klasie Extending, a teraz wywołam tą metode w superklasie czyli Mybase");
+
+  // coś jak super.printClassName(c), lub parent::printClassName($c) w PHP, wywołuję metodę z superklasy w kontekscie tego obiektu
+  // Base nie jest obiektem, tylko konstruktorem, obiektem z którego konstruktor Extending utworzył prototyp jest Base.prototype 
+  // i dlatego jego użyjemy.
+  // Używamy metody call, i pierwszego argumentu this, aby wywołac metode w kontekscie obiektu this, a nie jakiegoś undefined.
+  MyBase.prototype.printClassName.call(this, c);
+};
+
+// Na wszelki wypadek dziedziczymy jeszcze po Extending żeby sprawdzić czy da się
+// więcej niż 2 razy.
+function MoreExtending(){
+  // call super / parent
+  Extending.call(this);
+  this.nameOfClass = "MoreExtending";
+  console.log("Wywołano konstruktor klasy MoreExtending.");
+};
+MoreExtending.prototype = new Extending();
+MoreExtending.prototype.printClassName = function(c){
+   console.log("Wywołano metodę printClassName w klasie MoreExtending, a teraz wywołam tą metode w superklasie czyli Extending");
+   Extending.prototype.printClassName.call(this,c);
+};
+console.groupEnd();
+console.log("Zauważ, że do tego momentu już zostały odpalone konstruktory, po kilka razy, pomimo że sami nie utworzyliśmy żadnych obiektów tych 3 typów. Dlatego jeszcze raz, proszę cię, nie rób 
+
+side-effects (Efektów ubocznych) w konstruktorach javascript! Konstruktor ma zadeklarowac wartości pól potworzyć potrzebne obiektowi obiekty, i nic więcej!");
+console.group();
+console.log("Tworzymy obiekt klasy MyBase o nazwie myBase.");
+var myBase = new MyBase();
+console.log("Koniec. A teraz tworzymy obiekt klasy Extending o nazwie extending.");
+var extending = new Extending();
+console.log("Koniec. A teraz tworzymy obiekt klasy MoreExtending o nazwie moreExtending.");
+var moreExtending = new MoreExtending();
+console.log("Koniec.");
+console.groupEnd();
+// testy jednostkowe
+console.group();
+console.log("A teraz garść testów.");
+console.log("myBase instanceof MyBase: "+(myBase instanceof MyBase));  // true
+console.log("myBase instanceof Extending: "+(myBase instanceof Extending));  // false 
+console.log("myBase instanceof MoreExtending: "+(myBase instanceof MoreExtending));  // false
+
+
+console.log("extending instanceof MyBase: "+(extending instanceof MyBase));  // true 
+console.log("extending instanceof Extending: "+(extending instanceof Extending));  // true 
+console.log("extending instanceof MoreExtending: "+(extending instanceof MoreExtending));  // false
+
+console.log("moreExtending instanceof MyBase: "+(moreExtending instanceof MyBase));  // true
+console.log("moreExtending instanceof Extending: "+(moreExtending instanceof Extending)); // true 
+console.log("moreExtending instanceof MoreExtending: "+(moreExtending instanceof MoreExtending)); // true
+
+console.log("");
+console.log("Jak widać instanceof wbrew pozorom działa dość intuicyjnie, i nic się nie psuje pomimo że pominelismy przypisanie prototype.constructor");
+console.log("To teraz w drugą stronę, sprawdzimy co jest prototypem czego (isPrototypeOf wywołujemy na PROTOTYPIE pobranym z konstruktora i jako parametr podajemy mu obiekt do sprawdzenia, np:");
+console.log("MOJAKLASA.prototype.isPrototypeOf(MOJ_OBIEKT) ):");
+
+console.log("MyBase.prototype.isPrototypeOf(myBase): "+ MyBase.prototype.isPrototypeOf(myBase)); // true 
+console.log("MyBase.prototype.isPrototypeOf(extending): "+ MyBase.prototype.isPrototypeOf(extending));  // true 
+console.log("MyBase.prototype.isPrototypeOf(moreExtending): "+ MyBase.prototype.isPrototypeOf(moreExtending));  // true
+
+
+console.log("Extending.prototype.isPrototypeOf(myBase): "+ Extending.prototype.isPrototypeOf(myBase));  // false
+console.log("Extending.prototype.isPrototypeOf(extending): "+ Extending.prototype.isPrototypeOf(extending));  // true
+console.log("Extending.prototype.isPrototypeOf(moreExtending): "+ Extending.prototype.isPrototypeOf(moreExtending));  // true
+
+console.log("MoreExtending.prototype.isPrototypeOf(myBase): "+ MoreExtending.prototype.isPrototypeOf(myBase));  // false
+console.log("MoreExtending.prototype.isPrototypeOf(extending): "+ MoreExtending.prototype.isPrototypeOf(extending));  // false
+console.log("MoreExtending.prototype.isPrototypeOf(moreExtending): "+ MoreExtending.prototype.isPrototypeOf(moreExtending));  // true
+
+
+console.log("A teraz testy polimorfizmu:");
+console.log("Odpalam myBase.printClassName(c), c ustawiam na - 'pusty_string', className zostalo ustawione w konstruktorze obiektu przy jego tworzeniu.");
+console.log("---------------------------------------------");
+myBase.printClassName("pusty_string");
+console.log("---------------------------------------------");
+console.log("Teraz to samo dla obiektu extending.");
+console.log("---------------------------------------------");
+extending.printClassName("pusty_string");
+console.log("---------------------------------------------");
+console.log("Teraz to samo dla obiektu moreExtending.");
+console.log("---------------------------------------------");
+moreExtending.printClassName("pusty_string");
+console.groupEnd();
+
+
+
+</script>
+</head>
+<body>
+</body>
+</html>
