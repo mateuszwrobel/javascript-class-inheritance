@@ -37,31 +37,32 @@ var HeavyMetal = ( function ( MetalMusic ) {
 		]
 	}
 
+	return instance;
 
 } ) ( MetalMusic );
 
 
 var PowerMetal = ( function ( MetalMusic ) {
 
-	var PowerMetal = function () {
-		for ( key in MetalMusic ) {
-			if ( MetalMusic.hasOwnProperty( key ) ) {
-				this[ key ] = MetalMusic[ key ];
-			}
-		}
+	var instance = {};
 
-		this.genre = 'Power Metal';
-		this.vocal = 'Girlish';
-		this.text = 'Virgins and dragons';
-		this.mainInstruments = [
-			'Guitar',
-			'Bass guitar',
-			'Drums',
-			'Keyboard'
-		];
+	for ( key in MetalMusic ) {
+		if ( MetalMusic.hasOwnProperty( key ) ) {
+			instance[ key ] = MetalMusic[ key ];
+		}
 	}
 
-	return PowerMetal;
+	instance.genre = 'Power Metal';
+	instance.vocal = 'Girlish';
+	instance.text = 'Virgins and dragons';
+	instance.mainInstruments = [
+		'Guitar',
+		'Bass guitar',
+		'Drums',
+		'Keyboard'
+	];
+
+	return instance;
 
 } ) ( MetalMusic );
 
@@ -87,6 +88,8 @@ var ThrashMetal = ( function ( MetalMusic ) {
 		]
 	};
 
+	return instance;
+
 } ) ( MetalMusic );
 
 
@@ -111,8 +114,9 @@ var DeathMetal = ( function ( MetalMusic ) {
 		]
 	};
 
-} ) ( MetalMusic );
+	return instance;
 
+} ) ( MetalMusic );
 
 var Metallica = ( function ( ThrashMetal ) {
 
@@ -134,11 +138,14 @@ var Metallica = ( function ( ThrashMetal ) {
 	instance.albumNumber = 11;
 	instance.formationDate = '1981.10.28';
 
+	return instance;
+
 } ) ( ThrashMetal );
 
 var IronMaiden = ( function ( HeavyMetal ) {
 
-	var instance = {};
+
+	var instance = {}
 
 	for ( key in HeavyMetal ) {
 		if ( HeavyMetal.hasOwnProperty( key ) ) {
@@ -158,31 +165,30 @@ var IronMaiden = ( function ( HeavyMetal ) {
 	instance.albumNumber = 15;
 	instance.formationDate = '1975.12.25';
 
+	return instance;
+
 } ) ( HeavyMetal );
 
 var BlindGuardian = ( function ( PowerMetal ) {
 
-	PowerMetal = new PowerMetal();
-	var BlindGuardian = function () {
-		for ( key in PowerMetal ) {
-			if ( PowerMetal.hasOwnProperty( key ) ) {
-				this[ key ] = PowerMetal[ key ];
-			}
-		}
+	var instance = {};
 
-		this.name = 'Blind Guardian'
-		this.band = [
-			'Hansi Kursch',
-			'Andre Olbrich',
-			'Marcus Siepen',
-			'Frederick Ehmke'
-		];
-		this.albumNumber = 10;
-		this.formationDate = '1984';
+	for ( key in PowerMetal ) {
+		if ( PowerMetal.hasOwnProperty( key ) ) {
+			instance[ key ] = PowerMetal[ key ];
+		}
 	}
 
+	instance.name = 'Blind Guardian'
+	instance.band = [
+		'Hansi Kursch',
+		'Andre Olbrich',
+		'Marcus Siepen',
+		'Frederick Ehmke'
+	];
+	instance.albumNumber = 10;
+	instance.formationDate = '1984';
 
-
-	return BlindGuardian;
+	return instance;
 
 } ) ( PowerMetal );
